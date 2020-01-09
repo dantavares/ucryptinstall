@@ -8,7 +8,7 @@
 #1º Use o gparted e defina 2 partições uma para o boot e outra que será
 #criptografada
 #
-#2º Entre no shell e baixe este script
+#2º Entre no shell e baixe este script: wget http://bit.ly/ucryptinstallbr
 #
 #3º Entre como root: "sudo su" ou "sudo -i"
 #
