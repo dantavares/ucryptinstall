@@ -47,7 +47,7 @@ do
 	then
 		/lib/cryptsetup/askpass "Confirme a senha:" >"$pwf2"
 		echo
-		diff -q --label $'\b\b\b\b\b\b\b\bFirst' "$pwf" \
+		diff -q --label $'\b\b\b\b\b\b\b\bPrimeira' "$pwf" \
 				--label "segunda senha" "$pwf2" || shred -u "$pwf"
 		shred -u "$pwf2"
 	else
@@ -71,7 +71,7 @@ echo "Agora inicie o programa de instalacao"
 echo "Escolha avancado na tela do local de instalacao"
 echo "Defina o local-root como root (/), formate como preferir"
 echo "Defina o $pboot como boot (/boot), formate como preferir"
-echo "Defina a instalação do grub para $pboot"
+echo "Defina a instalação do grub para o dispositivo das particoes (ex: /dev/sda)"
 echo "Nao feche a janela do shell!"
 echo "Antes de ir em frente na tela que define o usuário,"
 read -p "Aperte Enter para continuar o script"
