@@ -1,0 +1,82 @@
+#!/bin/bash
+#Versao: 0.1b
+
+################################################################################
+#Este script te ajuda a instalar o Ubuntu e seus derivados com criptografia
+#total!
+#
+#1º Use o gparted e defina 2 partições uma para o boot e outra que será
+#criptografada
+#
+#2º Entre no shell e baixe este script
+#
+#3º Entre como root: "sudo su" ou "sudo -i"
+#
+#4º Rode este script: source ucryptinstallbr
+#
+#5º Siga as instruções posteriores
+################################################################################
+
+################################################################################
+#Definicao de variaveis
+################################################################################
+
+#Define a particao de boot
+pboot=/dev/sda1
+
+#Define a particao a ser criptografada
+pcrypt=/dev/sda2
+
+#Define a cifra, pode ser: twofish, aes, serpent
+#Para saber qual a melhor execute: cryptsetup benchmark
+ciph=twofish
+
+#Define o tamanho do swap
+swap=1G
+
+################################################################################
+
+#Criptografar
+pwf=$(mktemp) pwf2=$(mktemp)
+chmod 600 "$pwf" "$pwf2"
+while [[ ! -s "$pwf" ]]
+do
+	/lib/cryptsetup/askpass "Defina a senha de criptografia:" >"$pwf"
+	echo
+	if [[ -s "$pwf" ]]
+	then
+		/lib/cryptsetup/askpass "Confirme a senha:" >"$pwf2"
+		echo
+		diff -q --label $'\b\b\b\b\b\b\b\bFirst' "$pwf" \
+				--label "segunda senha" "$pwf2" || shred -u "$pwf"
+		shred -u "$pwf2"
+	else
+		echo -e "Senha em branco nao!\n"
+	fi
+done
+
+cryptsetup luksFormat -c "$ciph"-xts-plain64 -s 512 -h sha512 -i 5000 -y "$pcrypt" --key-file "$pwf"
+cryptsetup luksOpen "$pcrypt" crypt --key-file "$pwf"
+
+#Criar as lv
+pvcreate /dev/mapper/crypt
+vgcreate local /dev/mapper/crypt
+lvcreate -L "$swap" -n swap local
+lvcreate -l 100%FREE -n root local
+mkswap -f /dev/mapper/local-swap
+
+#Primeira parte completa, segue com a instalacao
+clear
+echo "Agora inicie o programa de instalacao"
+echo "Escolha avancado na tela do local de instalacao"
+echo "Defina o local-root como root (/), formate como preferir"
+echo "Defina o $pboot como boot (/boot), formate como preferir"
+echo "Defina a instalação do grub para $pboot"
+echo "Nao feche a janela do shell!"
+echo "Antes de ir em frente na tela que define o usuário,"
+read -p "Aperte Enter para continuar o script"
+
+#Continua a segunda parte e finaliza a instalacao
+UUID=$(blkid -s UUID -o value "$pcrypt")
+echo "crypt UUID=$UUID none luks,retry=3,lvm=local" >> /target/etc/crypttab
+echo "Agora pode continuar a instalacao e fechar este shell"
