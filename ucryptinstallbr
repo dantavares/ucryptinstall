@@ -78,5 +78,5 @@ read -p "Aperte Enter para continuar o script"
 
 #Continua a segunda parte e finaliza a instalacao
 UUID=$(blkid -s UUID -o value "$pcrypt")
-echo "crypt UUID=$UUID none luks,retry=3,lvm=local" >> /target/etc/crypttab
+echo "crypt UUID=$UUID none luks" >> /target/etc/crypttab
 echo "Agora pode continuar a instalacao e fechar este shell"
