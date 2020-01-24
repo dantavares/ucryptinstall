@@ -13,7 +13,7 @@
 #
 #4º Edit this script as you wish (boot and root partitions, cipher etc)
 #
-#5º Run thos script: source ucryptinstall
+#5º Run this script: source ucryptinstall
 #
 #6º When prompted, run ubuntu installation, stop at the user configuration screen,
 #continue this script and then continue the installation.
@@ -30,7 +30,7 @@ pboot=/dev/sda1
 pcrypt=/dev/sda2
 
 #Sets the cipher, can be: twofish, aes or serpent
-#You can run: "cryptsetup benchmark" test the fastest
+#You can run: "cryptsetup benchmark" and test the fastest
 ciph=serpent
 
 #Sets the swap size
