@@ -7,7 +7,8 @@ encrypted
 
 2º Enter the shell and download this script: 
 Português Brasil = wget http://bit.ly/ucryptinstallbr
-English = [PLANNED]
+
+English = http://bit.ly/ucryptinstall
 
 3º Login as root: "sudo su" or "sudo -i"
 
