@@ -1,0 +1,81 @@
+#!/bin/bash
+#Versao: 0.1b
+
+################################################################################
+#This script helps you install Ubuntu and its derivatives with full encryption
+#total!
+#1º Use gparted and define 2 partitions one for boot and one that will be 
+#encrypted
+#
+#2º Enter the console and download this script: wget http://bit.ly/ucryptinstall
+#
+#3º Login as root: "sudo su" or "sudo -i"
+#
+#4º Edit this script as you wish (boot and root partitions, cipher etc)
+#
+#5º Run thos script: source ucryptinstall
+#
+#6º When prompted, run ubuntu installation, stop at the user configuration screen,
+#continue this script and then continue the installation.
+################################################################################
+
+################################################################################
+#Variables
+################################################################################
+
+#Sets boot partition
+pboot=/dev/sda1
+
+#Sets the logical volume partition to be encrypted
+pcrypt=/dev/sda2
+
+#Sets the cipher, can be: twofish, aes or serpent
+#You can run: "cryptsetup benchmark" test the fastest
+ciph=serpent
+
+#Sets the swap size
+swap=1G
+
+################################################################################
+
+pwf=$(mktemp) pwf2=$(mktemp)
+chmod 600 "$pwf" "$pwf2"
+while [[ ! -s "$pwf" ]]
+do
+	/lib/cryptsetup/askpass "Enter the encryption password:" >"$pwf"
+	echo
+	if [[ -s "$pwf" ]]
+	then
+		/lib/cryptsetup/askpass "Enter the password again:" >"$pwf2"
+		echo
+		diff -q --label $'\b\b\b\b\b\b\b\bPrimeira' "$pwf" \
+				--label "second password" "$pwf2" || shred -u "$pwf"
+		shred -u "$pwf2"
+	else
+		echo -e "Blank password not valid!\n"
+	fi
+done
+
+cryptsetup luksFormat -c "$ciph"-xts-plain64 -s 512 -h sha512 -i 5000 -y "$pcrypt" --key-file "$pwf"
+cryptsetup luksOpen "$pcrypt" crypt --key-file "$pwf"
+
+#Criar as lv
+pvcreate /dev/mapper/crypt
+vgcreate local /dev/mapper/crypt
+lvcreate -L "$swap" -n swap local
+lvcreate -l 100%FREE -n root local
+mkswap -f /dev/mapper/local-swap
+
+clear
+echo "Now start the installation program"
+echo "Enter manual disk configuration"
+echo "Set "local-root" to root (/), format as you prefer"
+echo "Set $pboot to boot (/boot), format as you prefer"
+echo "Define the installation of grub for the partition device (ex: /dev/sda)"
+echo "Don't close this script yet!"
+echo "Before going ahead on the screen that defines the user,"
+read -p "Press Enter to continue the script"
+
+UUID=$(blkid -s UUID -o value "$pcrypt")
+echo "crypt UUID=$UUID none luks" >> /target/etc/crypttab
+echo "You can now continue the installation"
