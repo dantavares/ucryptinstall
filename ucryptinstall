@@ -59,7 +59,7 @@ done
 cryptsetup luksFormat -c "$ciph"-xts-plain64 -s 512 -h sha512 -i 5000 -y "$pcrypt" --key-file "$pwf"
 cryptsetup luksOpen "$pcrypt" crypt --key-file "$pwf"
 
-#Criar as lv
+#Make lvs
 pvcreate /dev/mapper/crypt
 vgcreate local /dev/mapper/crypt
 lvcreate -L "$swap" -n swap local
@@ -76,6 +76,11 @@ echo "Don't close this script yet!"
 echo "Before going ahead on the screen that defines the user,"
 read -p "Press Enter to continue the script"
 
+#Create the crypttab file, to enable decryption at boot
 UUID=$(blkid -s UUID -o value "$pcrypt")
 echo "crypt UUID=$UUID none luks" >> /target/etc/crypttab
+
+#This will mount /tmp on memory, if you have low RAM, erase this line below
+echo "tmpfs /tmp tmpfs rw,nosuid,nodev" >> /target/etc/fstab
+
 echo "You can now continue the installation"
