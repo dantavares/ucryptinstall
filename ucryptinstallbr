@@ -79,4 +79,8 @@ read -p "Aperte Enter para continuar o script"
 #Continua a segunda parte e finaliza a instalacao
 UUID=$(blkid -s UUID -o value "$pcrypt")
 echo "crypt UUID=$UUID none luks" >> /target/etc/crypttab
+
+#Isso fará montar o /tmp na memoria, se voce tem pouca RAM, apague a linha abaixo
+echo "tmpfs /tmp tmpfs rw,nosuid,nodev" >> /target/etc/fstab
+
 echo "Agora pode continuar a instalacao e fechar este shell"
